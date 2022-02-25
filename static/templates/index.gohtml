@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sender!</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+    {{if eq .Method "POST"}}
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    {{end}}
+</head>
+
+<body>
+    <div class="container">
+        <form action="/" method="POST">
+            <div class="row">
+                <h1>Send Email Easily!</h1>
+            </div>
+            <div class="row">
+                <h4 style="text-align:center">Without save any data from you.
+                <a href="https://github.com/0ne-zero/email_sender_Golang">Github page</a>
+                </h4>
+                
+            </div>
+            <div class="row input-container">
+                <div class="col-md-6 col-sm-12">
+                    <div class="styled-input">
+                        <input type="text" name="from" id="from"     />
+                        <label>Sender</label>
+                    </div>
+                </div>
+                <div class="col-md-6 col-sm-12">
+                    <div class="styled-input" style="float:right;">
+                        <input type="Password" name="pass" id="pass"     />
+                        <label>Sender Password</label>
+                    </div>
+                </div>
+                <div class="col-xs-12">
+                    <div class="styled-input wide">
+                        <input type="text" name="to" id="to"    >
+                        <label>Receiver</label>
+                    </div>
+                </div>
+
+                <div class="col-xs-12">
+                    <div class="styled-input wide">
+                        <input type="text" name="subject" id="subject"     />
+                        <label>Subject</label>
+                    </div>
+                </div>
+                <div class="col-xs-12">
+                    <div class="styled-input wide">
+                        <textarea name="message" id="message"   ></textarea>
+                        <label>Message</label>
+                    </div>
+                </div>
+                <div class="col-xs-12">
+                    <input class="btn-lrg submit-btn" onclick=validate() type="submit" value="Send Message" id="submit">
+                </div>
+            </div>
+        </form>
+    </div>
+    {{if .ValidationError}}
+    <script>
+        swal("Input Validation Error",{{.Message}},"error")
+    </script>
+    {{else}}
+        {{if eq .Method "POST"}}
+            {{if .Success}}
+                <script>
+                    swal("Congrats!",{{.Message}},"success")
+                </script>
+            {{else}}
+                <script>
+                    swal("Oh sorry!",{{.Message}},"error")
+                </script>
+            {{end}}
+        {{end}}
+    {{end}}
+
+<script>
+    function validate(e){
+        e = e || window.event
+        let from = document.getElementById('from').value;
+        let pass = document.getElementById("pass").value;
+        let to = document.getElementById("to").value;
+        let subject = document.getElementById("subject").value;
+        let message = document.getElementById("message").value;
+        debugger;
+        if (from == "" || pass == "" || to == ""|| subject == "" || message == "") {
+            swal("Input Validation Error",{{.Message}},"error");
+            if (event.preventDefault) { 
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }    
+        }
+    }    
+</script>
+</body>
+</html>
