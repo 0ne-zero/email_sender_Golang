@@ -6,11 +6,19 @@ import (
 	"html/template"
 	"net/http"
 	"net/smtp"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/gorilla/mux"
 	gomail "gopkg.in/mail.v2"
 )
+
+// If programs execute via symbolic link,The program can't find template directory
+// So executable file should be in folder that also "static" is in it
+var mainDirectory string = path.Dir(os.Args[0])
+var staticDirectory string = mainDirectory + "/static"
+var templatesDirectory string = staticDirectory + "/templates"
 
 type TemplateData struct {
 	Message         string
@@ -26,23 +34,14 @@ func newRouter() *mux.Router {
 	r.HandleFunc("/", indexPagePOST).Methods("POST")
 
 	// Access to static directory
-	static_dir := http.Dir("./static/")
-	handler := http.StripPrefix("/static/", http.FileServer(static_dir))
+	handler := http.StripPrefix("/static/", http.FileServer(http.Dir(staticDirectory)))
 	r.PathPrefix("/static/").Handler(handler).Methods("GET")
 
 	return r
 }
 
-func main() {
-	fmt.Println("I'm alive")
-
-	// Run server
-	r := newRouter()
-	http.ListenAndServe(":8080", r)
-}
-
 func indexPageGET(w http.ResponseWriter, r *http.Request) {
-	templates, err := template.ParseFiles("./static/templates/index.gohtml")
+	templates, err := template.ParseFiles(templatesDirectory + "/index.gohtml")
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +56,7 @@ func indexPagePOST(w http.ResponseWriter, r *http.Request) {
 	subject := r.Form.Get("subject")
 	body := r.Form.Get("message")
 
-	template, err := template.ParseFiles("./static/templates/index.gohtml")
+	template, err := template.ParseFiles(templatesDirectory + "/index.gohtml")
 	if err != nil {
 		panic(err)
 	}
@@ -97,4 +96,11 @@ func SendGmail_builtin(from, pass, to, subject, body string) error {
 	auth := smtp.PlainAuth("", from, pass, "smtp.gmail.com")
 	err := smtp.SendMail("smtp.gmail.com:587", auth, from, to_list, message)
 	return err
+}
+
+func main() {
+	fmt.Println("I'm alive")
+	// Run server
+	r := newRouter()
+	http.ListenAndServe(":8080", r)
 }
