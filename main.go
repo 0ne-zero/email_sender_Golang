@@ -8,6 +8,7 @@ import (
 	"net/smtp"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -18,7 +19,7 @@ import (
 // So executable file should be in folder that also "static" is in it
 var mainDirectory string = path.Dir(os.Args[0])
 var staticDirectory string = mainDirectory + "/static"
-var templatesDirectory string = staticDirectory + "/templates"
+var templatesDirectory string = filepath.Join(staticDirectory, "/templates")
 
 type TemplateData struct {
 	Message         string
@@ -41,7 +42,7 @@ func newRouter() *mux.Router {
 }
 
 func indexPageGET(w http.ResponseWriter, r *http.Request) {
-	templates, err := template.ParseFiles(templatesDirectory + "/index.gohtml")
+	templates, err := template.ParseFiles(filepath.Join(templatesDirectory, "/index.gohtml"))
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +57,7 @@ func indexPagePOST(w http.ResponseWriter, r *http.Request) {
 	subject := r.Form.Get("subject")
 	body := r.Form.Get("message")
 
-	template, err := template.ParseFiles(templatesDirectory + "/index.gohtml")
+	template, err := template.ParseFiles(filepath.Join(templatesDirectory, "/index.gohtml"))
 	if err != nil {
 		panic(err)
 	}
@@ -69,7 +70,7 @@ func indexPagePOST(w http.ResponseWriter, r *http.Request) {
 
 	email_err := SendGmail_builtin(from, pass, to, subject, body)
 	if email_err != nil {
-		template.ExecuteTemplate(w, "index.gohtml", TemplateData{ValidationError: false, Message: fmt.Sprintf("Email not sent ):\nError:\n%v", err.Error()), Success: false, Method: "POST"})
+		template.ExecuteTemplate(w, "index.gohtml", TemplateData{ValidationError: false, Message: fmt.Sprintf("Email not sent ):\nError:\n%s", email_err.Error()), Success: false, Method: "POST"})
 	} else {
 		template.ExecuteTemplate(w, "index.gohtml", TemplateData{ValidationError: false, Message: "Email sent (:", Success: true, Method: "POST"})
 	}
